@@ -1,5 +1,3 @@
-pip install diffusers
-
 import streamlit as st
 import whisper
 from transformers import pipeline
