@@ -1,6 +1,6 @@
-llvmlite==0.31.0
+llvmlite @ git+https://github.com/numba/llvmlite.git
 diffusers==0.18.0
-git+https://github.com/openai/whisper.git
+openai-whisper @ git+https://github.com/openai/whisper.git
 torch>=1.10.0
 numpy>=1.19.2
 transformers>=4.0.0
