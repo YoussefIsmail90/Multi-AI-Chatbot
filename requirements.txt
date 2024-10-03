@@ -7,3 +7,4 @@ streamlit
 openai
 langchain
 ffmpeg-python
+pillow==10.0.0
