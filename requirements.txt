@@ -1,7 +1,6 @@
 openai-whisper @ git+https://github.com/openai/whisper.git
 streamlit
 transformers>=4.0.0
-diffusers
 torch>=1.10.0
 numpy>=1.19.2
 sentencepiece
@@ -9,4 +8,3 @@ pillow==10.0.0
 ffmpeg-python
 openai
 langchain
-imageio[ffmpeg]
