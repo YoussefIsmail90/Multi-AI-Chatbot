@@ -1,3 +1,4 @@
+llvmlite==0.34.0
 diffusers==0.18.0  
 openai-whisper @ git+https://github.com/openai/whisper.git
 torch>=1.10.0
@@ -9,4 +10,3 @@ openai
 langchain
 ffmpeg-python
 pillow==10.0.0
-diffusers==0.18.0  
