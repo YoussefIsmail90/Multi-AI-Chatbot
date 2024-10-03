@@ -1,4 +1,4 @@
-!pip install diffusers
+pip install diffusers
 
 import streamlit as st
 import whisper
