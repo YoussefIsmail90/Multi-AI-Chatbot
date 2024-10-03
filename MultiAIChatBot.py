@@ -1,7 +1,11 @@
 import streamlit as st
 import whisper
 from transformers import pipeline
-from diffusers import StableDiffusionImg2VidPipeline
+from diffusers import StableDiffusionPipeline
+
+# Test if this works
+stable_diffusion = StableDiffusionPipeline.from_pretrained("CompVis/stable-diffusion-v1-4-original")
+
 import io
 from PIL import Image
 
