@@ -2,9 +2,11 @@ import streamlit as st
 import whisper
 from transformers import pipeline
 from diffusers import StableDiffusionImg2VidPipeline
+import io
+from PIL import Image
 
 # Load models
-whisper_model = whisper.load_model("openai/whisper-large-v3-turbo")
+whisper_model = whisper.load_model("large")
 llama_model = pipeline('text-generation', model="meta-llama/Llama-3.2-1B")
 vid_diffusion_model = StableDiffusionImg2VidPipeline.from_pretrained("stabilityai/stable-video-diffusion-img2vid-xt")
 
@@ -17,7 +19,7 @@ option = st.sidebar.selectbox(
     ("Text Chat", "Voice Chat", "Image to Video", "Image Animation")
 )
 
-# Display different inputs and instructions based on the chosen option
+# Text Chat
 if option == "Text Chat":
     st.subheader("Text Chat")
     user_input = st.text_input("Type your question:")
@@ -26,6 +28,7 @@ if option == "Text Chat":
         response = llama_model(user_input)
         st.write(f"Chatbot: {response[0]['generated_text']}")
 
+# Voice Chat
 elif option == "Voice Chat":
     st.subheader("Voice Chat")
     st.write("Upload an audio file, and the chatbot will respond.")
@@ -39,22 +42,23 @@ elif option == "Voice Chat":
             response = llama_model(user_input)
             st.write(f"Chatbot: {response[0]['generated_text']}")
 
+# Image to Video
 elif option == "Image to Video":
     st.subheader("Image to Video")
     st.write("Upload an image, and the app will generate a video based on it.")
     uploaded_image = st.file_uploader("Upload an Image", type=["jpg", "png"])
     if uploaded_image:
         st.write("Generating video from image...")
-        video = vid_diffusion_model(uploaded_image)
+        image = Image.open(uploaded_image)
+        video = vid_diffusion_model(image)  # Assuming this generates a video object
         st.video(video)
 
+# Image Animation (Placeholder for AnimateDiff integration)
 elif option == "Image Animation":
     st.subheader("Image Animation")
     st.write("Upload an image, and the app will animate it.")
-    # For the AnimateDiff model integration (assume a similar model loading and API)
     uploaded_image = st.file_uploader("Upload an Image for Animation", type=["jpg", "png"])
     if uploaded_image:
         st.write("Animating image...")
-        # Call the AnimateDiff model (not shown here for simplicity)
-        # animated_image = animate_diff_model(uploaded_image)
-        st.image(uploaded_image, caption="Animated Image (Placeholder)")
+        image = Image.open(uploaded_image)
+        st.image(image, caption="Animated Image (Placeholder)")
