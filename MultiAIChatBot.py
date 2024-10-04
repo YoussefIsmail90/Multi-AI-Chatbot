@@ -3,7 +3,6 @@ from PIL import Image
 from transformers import BlipProcessor, BlipForConditionalGeneration, pipeline
 from gtts import gTTS
 import os
-
 # Function to describe the uploaded image
 def describe_image(image_path):
     processor = BlipProcessor.from_pretrained("Salesforce/blip-image-captioning-base")
