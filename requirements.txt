@@ -3,3 +3,4 @@ transformers
 gtts
 Pillow
 torch
+openai-whisper==20230323
