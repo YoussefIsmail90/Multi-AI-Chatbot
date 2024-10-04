@@ -3,4 +3,3 @@ transformers
 gtts
 Pillow
 torch
-openai-whisper
