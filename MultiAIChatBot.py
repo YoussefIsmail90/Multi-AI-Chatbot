@@ -18,7 +18,7 @@ def describe_image(image_path):
 # Function to generate a story from the image description
 def generate_story(description):
     try:
-        generator = pipeline('text-generation', model='gpt2-arabic')  # GPT-2 is primarily English, but we can use a prompt in Arabic.
+        generator = pipeline('text-generation', model='gpt2')  # GPT-2 is primarily English, but we can use a prompt in Arabic.
         arabic_description = "أخبرني قصة عن: " + description  # Create a prompt in Arabic
         story = generator(arabic_description, max_length=300, num_return_sequences=1)
         return story[0]['generated_text']
