@@ -26,9 +26,9 @@ def generate_story(description):
     except Exception as e:
         return f"An error occurred: {str(e)}"
 
-# Function to transcribe audio using Whisper
+# Function to transcribe audio using Whisper (using the tiny model)
 def transcribe_audio(audio_file_path):
-    model = whisper.load_model("base")  # Load the Whisper model
+    model = whisper.load_model("tiny")  # Load the tiny Whisper model
     result = model.transcribe(audio_file_path)
     return result['text']
 
