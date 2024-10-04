@@ -1,40 +1,48 @@
 import streamlit as st
-import whisper
-from transformers import pipeline
+from PIL import Image
+from transformers import BlipProcessor, BlipForConditionalGeneration, pipeline
+from gtts import gTTS
+import os
 
-# Load models
-whisper_model = whisper.load_model("large")
-llama_model = pipeline('text-generation', model="meta-llama/Llama-3.2-1B")
+# Function to describe the uploaded image
+def describe_image(image_path):
+    processor = BlipProcessor.from_pretrained("Salesforce/blip-image-captioning-base")
+    model = BlipForConditionalGeneration.from_pretrained("Salesforce/blip-image-captioning-base")
 
-# Title of the app
-st.title("Multimodal Chatbot")
+    image = Image.open(image_path)
+    inputs = processor(image, return_tensors="pt")
+    out = model.generate(**inputs)
+    description = processor.decode(out[0], skip_special_tokens=True)
+    return description
 
-# Sidebar for choosing the task
-option = st.sidebar.selectbox(
-    "Choose an option:",
-    ("Text Chat", "Voice Chat")
-)
+# Function to generate a story from the image description
+def generate_story(description):
+    generator = pipeline('text-generation', model='gpt-2')
+    story = generator(f"Once upon a time, {description}", max_length=150)[0]['generated_text']
+    return story
 
-# Text Chat
-if option == "Text Chat":
-    st.subheader("Text Chat")
-    user_input = st.text_input("Type your question:")
-    if user_input:
-        st.write("Generating response...")
-        response = llama_model(user_input)
-        st.write(f"Chatbot: {response[0]['generated_text']}")
+# Function to convert the story to audio
+def convert_text_to_audio(text):
+    tts = gTTS(text)
+    audio_file = "story.mp3"
+    tts.save(audio_file)
+    return audio_file
 
-# Voice Chat
-elif option == "Voice Chat":
-    st.subheader("Voice Chat")
-    st.write("Upload an audio file, and the chatbot will respond.")
-    audio_input = st.file_uploader("Upload your audio file", type=["wav", "mp3"])
-    if audio_input:
-        st.write("Transcribing audio...")
-        transcription = whisper_model.transcribe(audio_input)
-        st.write(f"Transcription: {transcription['text']}")
-        user_input = transcription["text"]
-        if user_input:
-            st.write("Generating response...")
-            response = llama_model(user_input)
-            st.write(f"Chatbot: {response[0]['generated_text']}")
+# Streamlit app
+st.title("Image to Story Converter")
+
+uploaded_file = st.file_uploader("Choose an image...", type=["jpg", "png", "jpeg"])
+
+if uploaded_file is not None:
+    image = Image.open(uploaded_file)
+    st.image(image, caption='Uploaded Image.', use_column_width=True)
+
+    if st.button("Generate Story"):
+        description = describe_image(uploaded_file)
+        st.write(f"Image Description: {description}")
+
+        story = generate_story(description)
+        st.write(f"Generated Story: {story}")
+        
+        audio_file = convert_text_to_audio(story)
+        st.audio(audio_file)
