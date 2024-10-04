@@ -19,7 +19,7 @@ def describe_image(image_path):
 
 def generate_story(description):
     try:
-        generator = pipeline('text-generation', model='gpt-2')
+        generator = pipeline('text-generation', model='gpt2')
         story = generator(description, max_length=150, num_return_sequences=1)
         return story[0]['generated_text']
     except EnvironmentError as e:
