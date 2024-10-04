@@ -35,21 +35,23 @@ def text_to_audio(text):
     return audio_file_path
 
 # Streamlit app
-st.title("محول الصورة إلى قصة مع تحويل النص إلى صوت")
+st.title("Image to Story Converter with Text-to-Audio")  # Title in English
 
-uploaded_file = st.file_uploader("اختر صورة...", type=["jpg", "png", "jpeg"])
+# File uploader prompt in English
+uploaded_file = st.file_uploader("Choose an image...", type=["jpg", "png", "jpeg"])
 
 if uploaded_file is not None:
     image = Image.open(uploaded_file)
-    st.image(image, caption='الصورة المرفوعة.', use_column_width=True)
+    st.image(image, caption='Uploaded Image.', use_column_width=True)
 
-    if st.button("توليد القصة"):
-        with st.spinner("يتم توليد القصة..."):
+    # Button to generate the story
+    if st.button("Generate Story"):
+        with st.spinner("Generating story..."):
             description = describe_image(uploaded_file)
-            st.write(f"وصف الصورة: {description}")
+            st.write(f"Image Description: {description}")
 
             story = generate_story(description)
-            st.write(f"القصة المولدة: {story}")
+            st.write(f"Generated Story: {story}")
 
             # Convert the story to audio
             audio_file_path = text_to_audio(story)
