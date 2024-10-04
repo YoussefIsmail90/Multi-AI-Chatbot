@@ -1,8 +1,8 @@
 import streamlit as st
 from PIL import Image
 from transformers import BlipProcessor, BlipForConditionalGeneration, pipeline
-import whisper
-import tempfile
+from gtts import gTTS
+import os
 
 # Function to describe the uploaded image
 def describe_image(image_path):
@@ -18,42 +18,43 @@ def describe_image(image_path):
 # Function to generate a story from the image description
 def generate_story(description):
     try:
-        generator = pipeline('text-generation', model='gpt2')
-        story = generator(description, max_length=300, num_return_sequences=1)
+        generator = pipeline('text-generation', model='gpt2')  # GPT-2 is primarily English, but we can use a prompt in Arabic.
+        arabic_description = "أخبرني قصة عن: " + description  # Create a prompt in Arabic
+        story = generator(arabic_description, max_length=300, num_return_sequences=1)
         return story[0]['generated_text']
     except EnvironmentError as e:
         return f"Environment error: {str(e)}"
     except Exception as e:
         return f"An error occurred: {str(e)}"
 
-# Function to transcribe audio using Whisper (using the tiny model)
-def transcribe_audio(audio_file_path):
-    model = whisper.load_model("tiny")  # Load the tiny Whisper model
-    result = model.transcribe(audio_file_path)
-    return result['text']
+# Function to convert text to audio in Arabic
+def text_to_audio(text):
+    tts = gTTS(text=text, lang='ar')  # Specify Arabic language
+    audio_file_path = "generated_story.mp3"  # Output audio file path
+    tts.save(audio_file_path)
+    return audio_file_path
 
 # Streamlit app
-st.title("Image to Story Converter with Audio Transcription")
+st.title("محول الصورة إلى قصة مع تحويل النص إلى صوت")
 
-uploaded_file = st.file_uploader("Choose an image...", type=["jpg", "png", "jpeg"])
+uploaded_file = st.file_uploader("اختر صورة...", type=["jpg", "png", "jpeg"])
 
 if uploaded_file is not None:
     image = Image.open(uploaded_file)
-    st.image(image, caption='Uploaded Image.', use_column_width=True)
+    st.image(image, caption='الصورة المرفوعة.', use_column_width=True)
 
-    if st.button("Generate Story"):
-        with st.spinner("Generating story..."):
+    if st.button("توليد القصة"):
+        with st.spinner("يتم توليد القصة..."):
             description = describe_image(uploaded_file)
-            st.write(f"Image Description: {description}")
+            st.write(f"وصف الصورة: {description}")
 
             story = generate_story(description)
-            st.write(f"Generated Story: {story}")
+            st.write(f"القصة المولدة: {story}")
 
-            # Provide an option to upload an audio file for transcription
-            audio_file = st.file_uploader("Upload an audio file for transcription", type=["mp3", "wav"])
-            if audio_file is not None:
-                with tempfile.NamedTemporaryFile(delete=False) as temp_audio_file:
-                    temp_audio_file.write(audio_file.read())
-                    temp_audio_file_path = temp_audio_file.name
-                transcription = transcribe_audio(temp_audio_file_path)
-                st.write(f"Transcription: {transcription}")
+            # Convert the story to audio
+            audio_file_path = text_to_audio(story)
+            st.audio(audio_file_path)  # Play the audio
+
+            # Clean up the generated audio file if needed
+            if os.path.exists(audio_file_path):
+                os.remove(audio_file_path)
