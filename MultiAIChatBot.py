@@ -1,6 +1,6 @@
 import streamlit as st
 from PIL import Image
-from transformers import BlipProcessor, BlipForConditionalGeneration, pipeline
+from transformers import BlipProcessor, BlipForConditionalGeneration, pipeline, PipelineException
 from gtts import gTTS
 import os
 
@@ -16,10 +16,19 @@ def describe_image(image_path):
     return description
 
 # Function to generate a story from the image description
+
 def generate_story(description):
-    generator = pipeline('text-generation', model='gpt-2')
-    story = generator(f"Once upon a time, {description}", max_length=150)[0]['generated_text']
-    return story
+    try:
+        generator = pipeline('text-generation', model='gpt-2')
+        story = generator(description, max_length=150, num_return_sequences=1)
+        return story[0]['generated_text']
+    except EnvironmentError as e:
+        return f"Environment error: {str(e)}"
+    except PipelineException as e:
+        return f"Pipeline error: {str(e)}"
+    except Exception as e:
+        return f"An error occurred: {str(e)}"
+
 
 # Function to convert the story to audio
 def convert_text_to_audio(text):
