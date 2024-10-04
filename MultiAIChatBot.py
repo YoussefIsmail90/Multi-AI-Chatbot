@@ -1,6 +1,6 @@
 import streamlit as st
 from PIL import Image
-from transformers import BlipProcessor, BlipForConditionalGeneration, pipeline, PipelineException
+from transformers import BlipProcessor, BlipForConditionalGeneration, pipeline
 from gtts import gTTS
 import os
 
