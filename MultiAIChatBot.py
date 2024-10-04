@@ -15,12 +15,20 @@ def describe_image(image_path):
     description = processor.decode(out[0], skip_special_tokens=True)
     return description
 
+# Function to translate English text to Arabic
+def translate_to_arabic(text):
+    try:
+        translator = pipeline('translation', model='Helsinki-NLP/opus-mt-en-ar')  # English to Arabic translation model
+        translation = translator(text, max_length=400)[0]['translation_text']
+        return translation
+    except Exception as e:
+        return f"Translation error: {str(e)}"
+
 # Function to generate a story from the image description
 def generate_story(description):
     try:
-        generator = pipeline('text-generation', model='gpt2')  # GPT-2 is primarily English, but we can use a prompt in Arabic.
-        arabic_description = "أخبرني قصة عن: " + description  # Create a prompt in Arabic
-        story = generator(arabic_description, max_length=300, num_return_sequences=1)
+        generator = pipeline('text-generation', model='gpt2')  # You can replace this with a better Arabic model if needed
+        story = generator(description, max_length=300, num_return_sequences=1)
         return story[0]['generated_text']
     except EnvironmentError as e:
         return f"Environment error: {str(e)}"
@@ -47,14 +55,19 @@ if uploaded_file is not None:
     # Button to generate the story
     if st.button("Generate Story"):
         with st.spinner("Generating story..."):
-            description = describe_image(uploaded_file)
+            description = describe_image(uploaded_file)  # Get image description
             st.write(f"Image Description: {description}")
 
+            # Generate the story based on the description
             story = generate_story(description)
-            st.write(f"Generated Story: {story}")
+            st.write(f"Generated Story (in English): {story}")
 
-            # Convert the story to audio
-            audio_file_path = text_to_audio(story)
+            # Translate the story to Arabic
+            arabic_story = translate_to_arabic(story)
+            st.write(f"Translated Story (in Arabic): {arabic_story}")
+
+            # Convert the Arabic story to audio
+            audio_file_path = text_to_audio(arabic_story)  # Generate audio from Arabic text
             st.audio(audio_file_path)  # Play the audio
 
             # Clean up the generated audio file if needed
