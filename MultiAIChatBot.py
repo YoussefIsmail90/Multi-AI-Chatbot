@@ -19,7 +19,7 @@ def describe_image(image_path):
 def generate_story(description):
     try:
         generator = pipeline('text-generation', 
-                             model='meta-llama/Llama-3.2-1B', 
+                             model='amd/AMD-Llama-135m', 
                              use_auth_token='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')
         arabic_description = "أخبرني قصة عن: " + description  # Create a prompt in Arabic
         story = generator(arabic_description, max_length=300, num_return_sequences=1)
