@@ -19,8 +19,7 @@ def describe_image(image_path):
 def generate_story(description):
     try:
         generator = pipeline('text-generation', 
-                             model='amd/AMD-Llama-135m', 
-                             use_auth_token='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')
+                             model='amd/AMD-Llama-135m')  # Removed use_auth_token
         arabic_description = "أخبرني قصة عن: " + description  # Create a prompt in Arabic
         story = generator(arabic_description, max_length=300, num_return_sequences=1)
         return story[0]['generated_text']
@@ -32,7 +31,7 @@ def generate_story(description):
 # Function to convert text to speech using Hugging Face TTS
 def text_to_audio_huggingface(text, model_name="mozilla/tts_de_arabic"):
     try:
-        tts_pipeline = pipeline("text-to-speech", model=model_name, use_auth_token='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')
+        tts_pipeline = pipeline("text-to-speech", model=model_name)  # Removed use_auth_token
         speech = tts_pipeline(text)
         
         # Save the audio to a file
@@ -63,8 +62,11 @@ if uploaded_file is not None:
 
             # Convert the story to audio using the Hugging Face TTS model
             audio_file_path = text_to_audio_huggingface(story)
-            st.audio(audio_file_path)  # Play the audio
-
-            # Clean up the generated audio file if needed
-            if os.path.exists(audio_file_path):
-                os.remove(audio_file_path)
+            
+            if not audio_file_path.startswith("Error"):
+                st.audio(audio_file_path)  # Play the audio
+                # Optionally delete the audio file afterward
+                if os.path.exists(audio_file_path):
+                    os.remove(audio_file_path)
+            else:
+                st.write(audio_file_path)  # Display error if audio generation failed
