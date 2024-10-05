@@ -3,6 +3,7 @@ from PIL import Image
 from transformers import BlipProcessor, BlipForConditionalGeneration, pipeline
 import torch
 import soundfile as sf
+import os
 
 # Function to describe the uploaded image
 def describe_image(image_path):
@@ -18,9 +19,9 @@ def describe_image(image_path):
 # Function to generate a story from the image description
 def generate_story(description):
     try:
-        generator = pipeline('text-generation', 
-                             model='amd/AMD-Llama-135m')  # Removed use_auth_token
-        arabic_description = "أخبرني قصة عن: " + description  # Create a prompt in Arabic
+        # Using Arabic GPT-2 model for story generation
+        generator = pipeline('text-generation', model='akhaliq/arabic-gpt2')
+        arabic_description = "أخبرني قصة عن: " + description  # Prompt in Arabic
         story = generator(arabic_description, max_length=300, num_return_sequences=1)
         return story[0]['generated_text']
     except EnvironmentError as e:
@@ -28,10 +29,10 @@ def generate_story(description):
     except Exception as e:
         return f"An error occurred: {str(e)}"
 
-# Function to convert text to speech using Hugging Face TTS
-def text_to_audio_huggingface(text, model_name="mozilla/tts_de_arabic"):
+# Function to convert text to speech using Hugging Face TTS model
+def text_to_audio_huggingface(text):
     try:
-        tts_pipeline = pipeline("text-to-speech", model=model_name)  # Removed use_auth_token
+        tts_pipeline = pipeline("text-to-speech", model="arabic-tts/wav2vec2-large-xlsr-arabic")
         speech = tts_pipeline(text)
         
         # Save the audio to a file
