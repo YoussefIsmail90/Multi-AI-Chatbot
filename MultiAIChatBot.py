@@ -3,10 +3,6 @@ from PIL import Image
 from transformers import BlipProcessor, BlipForConditionalGeneration, pipeline
 import torch
 import soundfile as sf
-import os
-
-# Hugging Face API token
-HUGGING_FACE_TOKEN = "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"
 
 # Function to describe the uploaded image
 def describe_image(image_path):
@@ -22,11 +18,8 @@ def describe_image(image_path):
 # Function to generate a story from the image description
 def generate_story(description):
     try:
-        generator = pipeline(
-            'text-generation', 
-            model='aubmindlab/aragpt2-base',  # Use a valid Arabic GPT model from Hugging Face
-            use_auth_token=HUGGING_FACE_TOKEN
-        )
+        generator = pipeline('text-generation', 
+                             model='meta-llama/Llama-3.2-1B')  # Removed use_auth_token
         arabic_description = "أخبرني قصة عن: " + description  # Create a prompt in Arabic
         story = generator(arabic_description, max_length=300, num_return_sequences=1)
         return story[0]['generated_text']
@@ -36,9 +29,9 @@ def generate_story(description):
         return f"An error occurred: {str(e)}"
 
 # Function to convert text to speech using Hugging Face TTS
-def text_to_audio_huggingface(text, model_name="sil-ai/wav2vec2-large-xlsr-arabic"):
+def text_to_audio_huggingface(text, model_name="mozilla/tts_de_arabic"):
     try:
-        tts_pipeline = pipeline("text-to-speech", model=model_name, use_auth_token=HUGGING_FACE_TOKEN)
+        tts_pipeline = pipeline("text-to-speech", model=model_name)  # Removed use_auth_token
         speech = tts_pipeline(text)
         
         # Save the audio to a file
@@ -49,9 +42,9 @@ def text_to_audio_huggingface(text, model_name="sil-ai/wav2vec2-large-xlsr-arabi
         return f"Error generating audio: {str(e)}"
 
 # Streamlit app
-st.title("Image to Story Converter with Text-to-Audio")
+st.title("Image to Story Converter with Text-to-Audio")  # Title in English
 
-# File uploader prompt
+# File uploader prompt in English
 uploaded_file = st.file_uploader("Choose an image...", type=["jpg", "png", "jpeg"])
 
 if uploaded_file is not None:
