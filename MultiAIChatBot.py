@@ -1,8 +1,9 @@
 import streamlit as st
 from PIL import Image
 from transformers import BlipProcessor, BlipForConditionalGeneration, pipeline
-from gtts import gTTS
-import os
+import torch
+import soundfile as sf
+
 # Function to describe the uploaded image
 def describe_image(image_path):
     processor = BlipProcessor.from_pretrained("Salesforce/blip-image-captioning-base")
@@ -14,32 +15,32 @@ def describe_image(image_path):
     description = processor.decode(out[0], skip_special_tokens=True)
     return description
 
-# Function to translate English text to Arabic
-def translate_to_arabic(text):
-    try:
-        translator = pipeline('translation', model='Helsinki-NLP/opus-mt-en-ar')  # English to Arabic translation model
-        translation = translator(text, max_length=400)[0]['translation_text']
-        return translation
-    except Exception as e:
-        return f"Translation error: {str(e)}"
-
 # Function to generate a story from the image description
 def generate_story(description):
     try:
-        generator = pipeline('text-generation', model='gpt2')  # You can replace this with a better Arabic model if needed
-        story = generator(description, max_length=300, num_return_sequences=1)
+        generator = pipeline('text-generation', 
+                             model='meta-llama/Llama-3.2-1B', 
+                             use_auth_token='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')
+        arabic_description = "أخبرني قصة عن: " + description  # Create a prompt in Arabic
+        story = generator(arabic_description, max_length=300, num_return_sequences=1)
         return story[0]['generated_text']
     except EnvironmentError as e:
         return f"Environment error: {str(e)}"
     except Exception as e:
         return f"An error occurred: {str(e)}"
 
-# Function to convert text to audio in Arabic
-def text_to_audio(text):
-    tts = gTTS(text=text, lang='ar')  # Specify Arabic language
-    audio_file_path = "generated_story.mp3"  # Output audio file path
-    tts.save(audio_file_path)
-    return audio_file_path
+# Function to convert text to speech using Hugging Face TTS
+def text_to_audio_huggingface(text, model_name="mozilla/tts_de_arabic"):
+    try:
+        tts_pipeline = pipeline("text-to-speech", model=model_name, use_auth_token='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')
+        speech = tts_pipeline(text)
+        
+        # Save the audio to a file
+        audio_file_path = "generated_story.wav"
+        sf.write(audio_file_path, speech["speech"], 22050)
+        return audio_file_path
+    except Exception as e:
+        return f"Error generating audio: {str(e)}"
 
 # Streamlit app
 st.title("Image to Story Converter with Text-to-Audio")  # Title in English
@@ -54,19 +55,14 @@ if uploaded_file is not None:
     # Button to generate the story
     if st.button("Generate Story"):
         with st.spinner("Generating story..."):
-            description = describe_image(uploaded_file)  # Get image description
+            description = describe_image(uploaded_file)
             st.write(f"Image Description: {description}")
 
-            # Generate the story based on the description
             story = generate_story(description)
-            st.write(f"Generated Story (in English): {story}")
+            st.write(f"Generated Story (in Arabic): {story}")
 
-            # Translate the story to Arabic
-            arabic_story = translate_to_arabic(story)
-            st.write(f"Translated Story (in Arabic): {arabic_story}")
-
-            # Convert the Arabic story to audio
-            audio_file_path = text_to_audio(arabic_story)  # Generate audio from Arabic text
+            # Convert the story to audio using the Hugging Face TTS model
+            audio_file_path = text_to_audio_huggingface(story)
             st.audio(audio_file_path)  # Play the audio
 
             # Clean up the generated audio file if needed
