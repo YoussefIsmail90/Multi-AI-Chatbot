@@ -4,3 +4,4 @@ gtts
 Pillow
 torch
 sentencepiece
+soundfile
